@@ -1,5 +1,6 @@
 package com.sofka.inventory.routes;
 
+import com.sofka.inventory.handlers.ProductHandler;
 import com.sofka.inventory.models.dto.ProductDTO;
 import com.sofka.inventory.useCases.ProductCreateUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,10 @@ public class ProductRouterTests {
 
     @BeforeEach
     public void setup() {
+        productHandler = new ProductHandler(productCreateUseCase);
+        productRouter = new ProductRouter(productHandler);
+        webTestClient = WebTestClient.bindToRouterFunction(productRouter.productRoutes())
+            .build();
     }
 
     @Test
