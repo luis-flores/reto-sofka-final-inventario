@@ -22,7 +22,7 @@ public class ProductListUseCase implements IntFunction<Flux<ProductDTO>> {
     @Override
     public Flux<ProductDTO> apply(int page) {
         int pageSize = 100;
-        long skip = (long) page * pageSize;
+        long skip = (long)(page-1) * pageSize;
 
         Query query = new Query()
             .skip(skip)

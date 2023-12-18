@@ -9,7 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
 
 import static org.mockito.Mockito.when;
 
@@ -41,5 +44,18 @@ public class ProductRouterTests {
             .expectStatus().isOk()
             .expectBody(ProductDTO.class)
             .isEqualTo(productDTO);
+    }
+
+    @Test
+    void ProductListRouteTest() {
+        ProductDTO productDTO = new ProductDTO();
+        when(productListUseCase.apply(1)).thenReturn(Flux.just(productDTO));
+
+        webTestClient.get()
+            .uri("/products")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(ProductDTO.class)
+            .isEqualTo(Arrays.asList(productDTO));
     }
 }
