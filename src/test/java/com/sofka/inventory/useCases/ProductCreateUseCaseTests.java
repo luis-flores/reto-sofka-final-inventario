@@ -1,21 +1,36 @@
 package com.sofka.inventory.useCases;
 
+import com.sofka.inventory.models.dto.ProductDTO;
+import com.sofka.inventory.models.mongo.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.config.Configuration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductCreateUseCaseTests {
     private ProductCreateUseCase productCreateUseCase;
     @Mock
-    private MongoTemplate mongoTemplate;
+    private ReactiveMongoTemplate mongoTemplate;
+    private ModelMapper modelMapper;
 
     @BeforeEach
     public void setup() {
-        productCreateUseCase = new ProductCreateUseCase(mongoTemplate);
+        modelMapper = new ModelMapper();
+        modelMapper.getConfiguration()
+            .setFieldMatchingEnabled(true)
+            .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
+
+        productCreateUseCase = new ProductCreateUseCase(mongoTemplate, modelMapper);
     }
 
     @Test
