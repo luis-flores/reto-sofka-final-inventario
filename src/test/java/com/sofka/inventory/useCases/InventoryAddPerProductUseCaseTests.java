@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -21,8 +20,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductAddInventoryPerUnitUseCaseTests {
-    private ProductAddInventoryPerUnitUseCase productAddInventoryPerUnitUseCase;
+public class InventoryAddPerProductUseCaseTests {
+    private InventoryAddPerProductUnitUseCase inventoryAddPerProductUnitUseCase;
     @Mock
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
@@ -34,11 +33,11 @@ public class ProductAddInventoryPerUnitUseCaseTests {
             .setFieldMatchingEnabled(true)
             .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
 
-        productAddInventoryPerUnitUseCase = new ProductAddInventoryPerUnitUseCase(mongoTemplate, modelMapper);
+        inventoryAddPerProductUnitUseCase = new InventoryAddPerProductUnitUseCase(mongoTemplate, modelMapper);
     }
 
     @Test
-    public void productAddInventoryPerUnitUseCaseTest() {
+    public void inventoryAddPerProductUseCaseTest() {
         int quantityBefore = 10;
         int change = 5;
         int quantityAfter = quantityBefore + change;
@@ -55,7 +54,7 @@ public class ProductAddInventoryPerUnitUseCaseTests {
         when(mongoTemplate.findById(id, Product.class)).thenReturn(Mono.just(product));
         when(mongoTemplate.save(product)).thenReturn(Mono.just(product));
 
-        StepVerifier.create(productAddInventoryPerUnitUseCase.apply(inventoryDTO))
+        StepVerifier.create(inventoryAddPerProductUnitUseCase.apply(inventoryDTO))
             .consumeNextWith(productResult -> {
                 assert productResult.getId().equals(id);
                 assert productResult.getQuantity() == quantityAfter;
@@ -65,7 +64,7 @@ public class ProductAddInventoryPerUnitUseCaseTests {
     }
 
     @Test
-    public void productAddInventoryPerUnitProductDoesNotExist() {
+    public void inventoryAddPerProduct_ProductDoesNotExist() {
         Product product = new Product();
         product.setId("<product-id>");
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
@@ -74,13 +73,13 @@ public class ProductAddInventoryPerUnitUseCaseTests {
 
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.empty());
 
-        StepVerifier.create(productAddInventoryPerUnitUseCase.apply(inventoryDTO))
+        StepVerifier.create(inventoryAddPerProductUnitUseCase.apply(inventoryDTO))
             .expectError(ProductNotFoundException.class)
             .verify();
     }
 
     @Test
-    public void productAddInventoryPerUnitProductIsDisabled() {
+    public void inventoryAddPerProduct_ProductIsDisabled() {
         Product product = new Product();
         product.setId("<product-id>");
         product.setEnabled(false);
@@ -90,19 +89,19 @@ public class ProductAddInventoryPerUnitUseCaseTests {
 
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.just(product));
 
-        StepVerifier.create(productAddInventoryPerUnitUseCase.apply(inventoryDTO))
+        StepVerifier.create(inventoryAddPerProductUnitUseCase.apply(inventoryDTO))
             .expectError(IllegalArgumentException.class)
             .verify();
     }
 
     @Test
-    public void productAddInventoryPerUnitQuantityLowerThanMinimum() {
+    public void inventoryAddPerProduct_QuantityLowerThanMinimum() {
         Product product = new Product();
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
         InventoryDTO inventoryDTO = new InventoryDTO(productDTO, 0);
 
-        StepVerifier.create(productAddInventoryPerUnitUseCase.apply(inventoryDTO))
+        StepVerifier.create(inventoryAddPerProductUnitUseCase.apply(inventoryDTO))
             .expectError(IllegalArgumentException.class)
             .verify();
     }

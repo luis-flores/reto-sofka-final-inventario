@@ -6,7 +6,6 @@ import com.sofka.inventory.models.exceptions.ProductNotFoundException;
 import com.sofka.inventory.models.mongo.Product;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -17,10 +16,9 @@ import java.util.function.Function;
 @Service
 @Validated
 @AllArgsConstructor
-public class ProductAddInventoryPerUnitUseCase implements Function<InventoryDTO, Mono<ProductDTO>> {
+public class InventoryAddPerProductUnitUseCase implements Function<InventoryDTO, Mono<ProductDTO>> {
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
-
 
     @Override
     public Mono<ProductDTO> apply(InventoryDTO inventoryDTO) throws IllegalArgumentException {
