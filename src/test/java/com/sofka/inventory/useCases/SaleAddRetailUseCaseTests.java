@@ -12,10 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,15 +50,21 @@ public class SaleAddRetailUseCaseTests {
         product.setEnabled(true);
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
+        Product productAfter = new Product();
+        productAfter.setId(id);
+        productAfter.setQuantity(quantityAfter);
+
         InventoryDTO inventoryDTO = new InventoryDTO(productDTO, change);
 
         when(mongoTemplate.findById(id, Product.class)).thenReturn(Mono.just(product));
-        when(mongoTemplate.save(product)).thenReturn(Mono.just(product));
+        when(mongoTemplate.save(product)).thenReturn(Mono.just(productAfter));
 
-        StepVerifier.create(saleAddRetailUseCase.apply(List.of(inventoryDTO)))
+        StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
             .consumeNextWith(productResult -> {
-                assert productResult.getId().equals(id);
-                assert productResult.getQuantity() == quantityAfter;
+                String resultId = productResult.getId();
+                int resultQuantity = productResult.getQuantity();
+                assert resultId.equals(id) : "Invalid id: " + resultId;
+                assert productResult.getQuantity() == quantityAfter : "Invalid quantity: " + resultQuantity;
             })
             .expectComplete()
             .verify();
@@ -75,7 +80,7 @@ public class SaleAddRetailUseCaseTests {
 
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.empty());
 
-        StepVerifier.create(saleAddRetailUseCase.apply(inventoryDTO))
+        StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
             .expectError(ProductNotFoundException.class)
             .verify();
     }
@@ -84,6 +89,7 @@ public class SaleAddRetailUseCaseTests {
     public void saleAddRetail_ProductIsDisabled() {
         Product product = new Product();
         product.setId("<product-id>");
+        product.setQuantity(100);
         product.setEnabled(false);
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
@@ -91,7 +97,7 @@ public class SaleAddRetailUseCaseTests {
 
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.just(product));
 
-        StepVerifier.create(saleAddRetailUseCase.apply(List.of(inventoryDTO)))
+        StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
             .expectError(IllegalArgumentException.class)
             .verify();
     }
@@ -103,7 +109,7 @@ public class SaleAddRetailUseCaseTests {
 
         InventoryDTO inventoryDTO = new InventoryDTO(productDTO, 0);
 
-        StepVerifier.create(saleAddRetailUseCase.apply(List.of(inventoryDTO)))
+        StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
             .expectError(IllegalArgumentException.class)
             .verify();
     }
@@ -112,13 +118,14 @@ public class SaleAddRetailUseCaseTests {
     public void saleAddRetail_QuantityGreaterThanInventory() {
         Product product = new Product();
         product.setId("<product-id>");
+        product.setQuantity(100);
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
         InventoryDTO inventoryDTO = new InventoryDTO(productDTO, 5000);
 
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.just(product));
 
-        StepVerifier.create(saleAddRetailUseCase.apply(List.of(inventoryDTO)))
+        StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
             .expectError(IllegalArgumentException.class)
             .verify();
     }
