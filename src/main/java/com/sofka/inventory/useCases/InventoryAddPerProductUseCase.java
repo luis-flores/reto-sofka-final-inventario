@@ -16,7 +16,7 @@ import java.util.function.Function;
 @Service
 @Validated
 @AllArgsConstructor
-public class InventoryAddPerProductUnitUseCase implements Function<InventoryDTO, Mono<ProductDTO>> {
+public class InventoryAddPerProductUseCase implements Function<InventoryDTO, Mono<ProductDTO>> {
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
 
@@ -27,7 +27,7 @@ public class InventoryAddPerProductUnitUseCase implements Function<InventoryDTO,
         if (quantityToAdd < minimum)
             return Mono.error(new IllegalArgumentException("Quantity must be greater than " + minimum));
 
-        ProductDTO productDTO = inventoryDTO.getProductDTO();
+        ProductDTO productDTO = inventoryDTO.getProduct();
         String id = productDTO.getId();
 
         return mongoTemplate.findById(id, Product.class)

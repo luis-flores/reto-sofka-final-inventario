@@ -1,9 +1,9 @@
 package com.sofka.inventory.routes;
 
-import com.sofka.inventory.handlers.ProductHandler;
+import com.sofka.inventory.handlers.InventoryHandler;
 import com.sofka.inventory.models.dto.InventoryDTO;
 import com.sofka.inventory.models.dto.ProductDTO;
-import com.sofka.inventory.useCases.InventoryAddPerProductUnitUseCase;
+import com.sofka.inventory.useCases.InventoryAddPerProductUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,14 +18,14 @@ import static org.mockito.Mockito.when;
 public class InventoryRouterTests {
     private WebTestClient webTestClient;
     @Mock
-    private InventoryAddPerProductUnitUseCase inventoryAddPerProductUnitUseCase;
+    private InventoryAddPerProductUseCase inventoryAddPerProductUseCase;
     private InventoryHandler inventoryHandler;
     private InventoryRouter inventoryRouter;
 
     @BeforeEach
     public void setup() {
-        inventoryHandler = new ProductHandler(inventoryAddPerProductUnitUseCase);
-        inventoryRouter = new ProductRouter(inventoryHandler);
+        inventoryHandler = new InventoryHandler(inventoryAddPerProductUseCase);
+        inventoryRouter = new InventoryRouter(inventoryHandler);
         webTestClient = WebTestClient.bindToRouterFunction(inventoryRouter.inventoryRoutes())
             .build();
     }
@@ -37,9 +37,9 @@ public class InventoryRouterTests {
         productDTO.setId("<product-id>");
         productDTO.setQuantity(10);
         productDTO.setEnabled(true);
-        inventoryDTO.setProductDTO(productDTO);
+        inventoryDTO.setProduct(productDTO);
         inventoryDTO.setQuantity(5);
-        when(inventoryAddPerProductUnitUseCase.apply(inventoryDTO)).thenReturn(Mono.just(productDTO));
+        when(inventoryAddPerProductUseCase.apply(inventoryDTO)).thenReturn(Mono.just(productDTO));
 
         webTestClient.post()
             .uri("/product/inventory/add")
