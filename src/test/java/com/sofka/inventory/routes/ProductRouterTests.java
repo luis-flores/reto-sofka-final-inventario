@@ -3,6 +3,7 @@ package com.sofka.inventory.routes;
 import com.sofka.inventory.handlers.ProductHandler;
 import com.sofka.inventory.models.dto.ProductDTO;
 import com.sofka.inventory.useCases.ProductCreateUseCase;
+import com.sofka.inventory.useCases.ProductListUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -21,12 +23,14 @@ public class ProductRouterTests {
     private WebTestClient webTestClient;
     @Mock
     private ProductCreateUseCase productCreateUseCase;
+    @Mock
+    private ProductListUseCase productListUseCase;
     private ProductHandler productHandler;
     private ProductRouter productRouter;
 
     @BeforeEach
     public void setup() {
-        productHandler = new ProductHandler(productCreateUseCase);
+        productHandler = new ProductHandler(productCreateUseCase, productListUseCase);
         productRouter = new ProductRouter(productHandler);
         webTestClient = WebTestClient.bindToRouterFunction(productRouter.productRoutes())
             .build();
@@ -52,10 +56,10 @@ public class ProductRouterTests {
         when(productListUseCase.apply(1)).thenReturn(Flux.just(productDTO));
 
         webTestClient.get()
-            .uri("/products")
+            .uri("/products/1")
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(ProductDTO.class)
-            .isEqualTo(Arrays.asList(productDTO));
+            .isEqualTo(List.of(productDTO));
     }
 }

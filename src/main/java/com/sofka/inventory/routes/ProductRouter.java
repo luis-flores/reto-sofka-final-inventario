@@ -17,6 +17,7 @@ public class ProductRouter {
     public RouterFunction<ServerResponse> productRoutes() {
         return RouterFunctions.route()
             .POST("/products", handler::create)
+            .GET("/products/{page}", handler::list)
             .build();
     }
 }
