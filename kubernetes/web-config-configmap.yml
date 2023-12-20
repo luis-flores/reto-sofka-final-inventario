@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+data:
+  inventory.server.port: "8081"
+  inventory_logs.server.port: "8082"
+  inventory.mongo.uri: "mongodb://mongo-service:27017/inventory"
+  inventory_logs.mongo.uri: "mongodb://mongo-service:27017/inventory_logs"
+  rabbit.uri: "amqp://guest:guest@rabbitmq-service:5672"

@@ -1,10 +1,10 @@
 server:
-  port: ${server.port}
+  port: ${inventory.server.port}
 
 spring:
   data:
     mongodb:
-      uri: ${mongo.uri}
+      uri: ${inventory.mongo.uri}
 
 rabbit:
   uri: ${rabbit.uri}
