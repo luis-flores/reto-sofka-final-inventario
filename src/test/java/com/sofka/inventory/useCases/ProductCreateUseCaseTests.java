@@ -1,5 +1,6 @@
 package com.sofka.inventory.useCases;
 
+import com.sofka.inventory.drivenAdapters.bus.RabbitPublisher;
 import com.sofka.inventory.models.dto.ProductDTO;
 import com.sofka.inventory.models.mongo.Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,8 @@ public class ProductCreateUseCaseTests {
     @Mock
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
+    @Mock
+    private RabbitPublisher eventBus;
 
     @BeforeEach
     public void setup() {
@@ -29,7 +32,7 @@ public class ProductCreateUseCaseTests {
             .setFieldMatchingEnabled(true)
             .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
 
-        productCreateUseCase = new ProductCreateUseCase(mongoTemplate, modelMapper);
+        productCreateUseCase = new ProductCreateUseCase(mongoTemplate, modelMapper, eventBus);
     }
 
     @Test

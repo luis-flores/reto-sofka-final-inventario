@@ -24,6 +24,7 @@ public class ProductListUseCaseTests {
     @Mock
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
+
     @BeforeEach
     public void setup() {
         modelMapper = new ModelMapper();

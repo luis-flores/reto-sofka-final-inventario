@@ -1,5 +1,6 @@
 package com.sofka.inventory.useCases;
 
+import com.sofka.inventory.drivenAdapters.bus.RabbitPublisher;
 import com.sofka.inventory.models.dto.ProductDTO;
 import com.sofka.inventory.models.mongo.Product;
 import lombok.AllArgsConstructor;
@@ -17,12 +18,18 @@ import java.util.function.Function;
 public class ProductCreateUseCase implements Function<ProductDTO, Mono<ProductDTO>> {
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
+    private RabbitPublisher eventBus;
 
     @Override
     public Mono<ProductDTO> apply(ProductDTO productDTO) {
         Product product = modelMapper.map(productDTO, Product.class);
 
         return mongoTemplate.save(product)
+            .doOnError(error -> eventBus.publishError("Save Product in Product Creation: ", error))
+            .doOnSuccess(success -> {
+                eventBus.publishRecord("Product Created: ", product);
+                eventBus.publishProductMovement("Product Created: ", product);
+            })
             .map(productModel -> modelMapper.map(productModel, ProductDTO.class));
     }
 }

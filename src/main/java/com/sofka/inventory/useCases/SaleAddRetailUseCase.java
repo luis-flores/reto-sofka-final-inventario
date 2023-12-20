@@ -1,5 +1,6 @@
 package com.sofka.inventory.useCases;
 
+import com.sofka.inventory.drivenAdapters.bus.RabbitPublisher;
 import com.sofka.inventory.models.dto.InventoryDTO;
 import com.sofka.inventory.models.dto.ProductDTO;
 import com.sofka.inventory.models.exceptions.ProductNotFoundException;
@@ -20,6 +21,7 @@ import java.util.function.Function;
 public class SaleAddRetailUseCase implements Function<Flux<InventoryDTO>, Flux<ProductDTO>> {
     private ReactiveMongoTemplate mongoTemplate;
     private ModelMapper modelMapper;
+    private RabbitPublisher eventBus;
 
     @Override
     public Flux<ProductDTO> apply(Flux<InventoryDTO> inventoryDTOs) {
@@ -38,13 +40,12 @@ public class SaleAddRetailUseCase implements Function<Flux<InventoryDTO>, Flux<P
         int saleQuantity = inventoryDTO.getQuantity();
 
         if (saleQuantity < minimum) {
-            return Mono.error(
-                new IllegalArgumentException(
-                    "Product " + productDTO.getId() +
-                        " with quantity " + productDTO.getQuantity() +
-                        " lower than minimum: " + minimum
-                )
+            var error = new IllegalArgumentException(
+                String.format("Product %s with quantity %d lower than minimum: %d",
+                    productDTO.getId(), productDTO.getQuantity(), minimum)
             );
+            eventBus.publishError("Validation Error in Retail Sale: ", error);
+            return Mono.error(error);
         }
 
         return Mono.just(inventoryDTO);
@@ -55,7 +56,14 @@ public class SaleAddRetailUseCase implements Function<Flux<InventoryDTO>, Flux<P
         String id = productDTO.getId();
 
         return mongoTemplate.findById(id, Product.class)
-            .switchIfEmpty(Mono.error(new ProductNotFoundException("Product " + id + " not found")))
+            .switchIfEmpty(
+                Mono.error(
+                    new ProductNotFoundException(
+                        String.format("Product %s not found", id)
+                    )
+                )
+            )
+            .doOnError(error -> eventBus.publishError("Product Error in Retail Sale: ", error))
             .map(productFound -> {
                 inventoryDTO.setProduct(modelMapper.map(productFound, ProductDTO.class));
                 return inventoryDTO;
@@ -68,13 +76,12 @@ public class SaleAddRetailUseCase implements Function<Flux<InventoryDTO>, Flux<P
         int currentQuantity = productDTO.getQuantity();
 
         if (currentQuantity < saleQuantity) {
-            return Mono.error(
-                new IllegalArgumentException(
-                    "Product " + productDTO.getId() +
-                        " has quantity " + currentQuantity +
-                        " lower than requested in sale: " + saleQuantity
-                )
+            var error = new IllegalArgumentException(
+                String.format("Product %s has quantity %d lower than quantity requested in sale: %d",
+                    productDTO.getId(), currentQuantity, saleQuantity)
             );
+            eventBus.publishError("Validation Error in Retail Sale: ", error);
+            return Mono.error(error);
         }
 
         return Mono.just(inventoryDTO);
@@ -84,11 +91,11 @@ public class SaleAddRetailUseCase implements Function<Flux<InventoryDTO>, Flux<P
         ProductDTO productDTO = inventoryDTO.getProduct();
 
         if (productDTO.getEnabled() == false) {
-            return Mono.error(
-                new IllegalArgumentException(
-                    "Product " + productDTO.getId() + " is disabled"
-                )
+            var error = new IllegalArgumentException(
+                String.format("Product %s is disabled", productDTO.getId())
             );
+            eventBus.publishError("Validation Error in Retail Sale: ", error);
+            return Mono.error(error);
         }
 
         return Mono.just(inventoryDTO);
@@ -100,6 +107,11 @@ public class SaleAddRetailUseCase implements Function<Flux<InventoryDTO>, Flux<P
         product.setQuantity(product.getQuantity() - inventoryDTO.getQuantity());
 
         return mongoTemplate.save(product)
+            .doOnError(error -> eventBus.publishError("Save Error in Retail Sale: ", error))
+            .doOnSuccess(success -> {
+                eventBus.publishRetailSale("Retail Sale Recorded: ", inventoryDTO);
+                eventBus.publishProductMovement("Product Sold in Retail Sale: ", inventoryDTO);
+            })
             .map(productSave -> modelMapper.map(productSave, ProductDTO.class));
     }
 }

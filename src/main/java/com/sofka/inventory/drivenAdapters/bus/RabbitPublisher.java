@@ -19,7 +19,7 @@ public class RabbitPublisher {
         publishLog(message, object, RabbitConfig.RECORD_ROUTING_KEY);
     }
 
-    public void publishError(String message, Exception error) {
+    public void publishError(String message, Object error) {
         publishLog(message, error, RabbitConfig.ERROR_ROUTING_KEY);
     }
 

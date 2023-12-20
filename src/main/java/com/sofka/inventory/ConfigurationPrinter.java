@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component;
 public class ConfigurationPrinter {
 
     public ConfigurationPrinter(
-        @Value("${mongo.uri}") String mongoUri /*,
-        @Value("${rabbit.uri}") String rabbitUri */
+        @Value("${mongo.uri}") String mongoUri,
+        @Value("${rabbit.uri}") String rabbitUri
     ) {
         Logger logger = LoggerFactory.getLogger(ConfigurationPrinter.class);
-        logger.info("*** CONFIGURACION ***");
-        logger.info("Mongo URI: " + mongoUri);
-//        logger.info("RabbitMQ URI: " + rabbitUri);
-        logger.info("*** CONFIGURACION ***");
+        logger.info("*** ENV VARS ***");
+        logger.info("Mongo URI: {}", mongoUri);
+        logger.info("RabbitMQ URI: {}", rabbitUri);
+        logger.info("*** ENV VARS ***");
     }
 }

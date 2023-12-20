@@ -1,5 +1,6 @@
 package com.sofka.inventory.useCases;
 
+import com.sofka.inventory.drivenAdapters.bus.RabbitPublisher;
 import com.sofka.inventory.models.dto.InventoryDTO;
 import com.sofka.inventory.models.dto.ProductDTO;
 import com.sofka.inventory.models.exceptions.ProductNotFoundException;
@@ -25,6 +26,8 @@ public class SaleAddRetailUseCaseTests {
     private SaleAddRetailUseCase saleAddRetailUseCase;
     @Mock
     private ReactiveMongoTemplate mongoTemplate;
+    @Mock
+    private RabbitPublisher eventBus;
     private ModelMapper modelMapper;
 
     @BeforeEach
@@ -34,7 +37,7 @@ public class SaleAddRetailUseCaseTests {
             .setFieldMatchingEnabled(true)
             .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
 
-        saleAddRetailUseCase = new SaleAddRetailUseCase(mongoTemplate, modelMapper);
+        saleAddRetailUseCase = new SaleAddRetailUseCase(mongoTemplate, modelMapper, eventBus);
     }
 
     @Test
