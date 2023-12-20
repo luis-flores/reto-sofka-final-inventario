@@ -17,6 +17,7 @@ public class SaleRouter {
     public RouterFunction<ServerResponse> saleRoutes() {
         return RouterFunctions.route()
             .POST("/sale/retail", handler::retailSale)
+            .POST("/sale/wholesale", handler::wholesale)
             .build();
     }
 }
