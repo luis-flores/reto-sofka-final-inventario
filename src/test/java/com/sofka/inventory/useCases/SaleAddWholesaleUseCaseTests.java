@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class SaleAddWholesaleUseCaseTests {
-    private SaleAddWholesaleUseCase saleAddRetailUseCase;
+    private SaleAddWholesaleUseCase saleAddWholesaleUseCase;
     @Mock
     private ReactiveMongoTemplate mongoTemplate;
     @Mock
