@@ -17,6 +17,7 @@ public class InventoryRouter {
     public RouterFunction<ServerResponse> inventoryRoutes() {
         return RouterFunctions.route()
             .POST("/product/inventory/add", handler::addInventoryPerProduct)
+            .POST("/product/inventory/add_many", handler::addInventoryToManyProducts)
             .build();
     }
 }

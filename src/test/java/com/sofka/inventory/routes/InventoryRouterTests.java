@@ -56,27 +56,42 @@ public class InventoryRouterTests {
     @Test
     void InventoryAddToManyProductsRouteTest() {
         ProductDTO productDTO1 = new ProductDTO();
-        productDTO1.setId("<product-id>");
-        productDTO1.setQuantity(10);
+        String id1 = "<product-id1>";
+        int quantityBefore1 = 10;
+        int change1 = 5;
+        int quantityAfter1 = quantityBefore1 + change1;
+        productDTO1.setId(id1);
+        productDTO1.setQuantity(quantityBefore1);
         productDTO1.setEnabled(true);
 
         InventoryDTO inventoryDTO1 = new InventoryDTO();
         inventoryDTO1.setProduct(productDTO1);
-        inventoryDTO1.setQuantity(5);
+        inventoryDTO1.setQuantity(change1);
 
         ProductDTO productDTO2 = new ProductDTO();
-        productDTO2.setId("<product-id>");
-        productDTO2.setQuantity(100);
+        String id2 = "<product-id2>";
+        int quantityBefore2 = 100;
+        int change2 = 50;
+        int quantityAfter2 = quantityBefore2 + change2;
+        productDTO2.setId(id2);
+        productDTO2.setQuantity(quantityBefore2);
         productDTO2.setEnabled(true);
 
         InventoryDTO inventoryDTO2 = new InventoryDTO();
-        inventoryDTO2.setProduct(productDTO1);
-        inventoryDTO2.setQuantity(50);
+        inventoryDTO2.setProduct(productDTO2);
+        inventoryDTO2.setQuantity(change2);
 
-        Flux<InventoryDTO> inventoryChanges = Flux.just(inventoryDTO1, inventoryDTO2);
-        Flux<ProductDTO> productChanges = Flux.just(productDTO1, productDTO2);
+        List<InventoryDTO> inventoryChanges = List.of(inventoryDTO1, inventoryDTO2);
+        ProductDTO productDTOResult1 = new ProductDTO();
+        productDTOResult1.setId(id1);
+        productDTOResult1.setQuantity(quantityAfter1);
+        ProductDTO productDTOResult2 = new ProductDTO();
+        productDTOResult2.setId(id2);
+        productDTOResult2.setQuantity(quantityAfter2);
+        List<ProductDTO> productResults = List.of(productDTOResult1, productDTOResult2);
 
-        when(inventoryAddToManyProductsUseCase.apply(inventoryChanges)).thenReturn(productChanges);
+        when(inventoryAddPerProductUseCase.apply(inventoryDTO1)).thenReturn(Mono.just(productDTOResult1));
+        when(inventoryAddPerProductUseCase.apply(inventoryDTO2)).thenReturn(Mono.just(productDTOResult2));
 
         webTestClient.post()
             .uri("/product/inventory/add_many")
@@ -84,6 +99,6 @@ public class InventoryRouterTests {
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(ProductDTO.class)
-            .isEqualTo(List.of(productDTO1, productDTO2));
+            .isEqualTo(productResults);
     }
 }
