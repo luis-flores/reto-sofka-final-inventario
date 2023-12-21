@@ -25,7 +25,7 @@ public class ProductCreateUseCase implements Function<ProductDTO, Mono<ProductDT
         Product product = modelMapper.map(productDTO, Product.class);
 
         return mongoTemplate.save(product)
-            .doOnError(error -> eventBus.publishError("Save Product in Product Creation: ", error))
+            .doOnError(error -> eventBus.publishError("Save Product in Product Creation: ", error.getMessage()))
             .doOnSuccess(success -> {
                 eventBus.publishRecord("Product Created: ", product);
                 eventBus.publishProductMovement("Product Created: ", product);

@@ -3,7 +3,7 @@ package com.sofka.inventory.useCases;
 import com.sofka.inventory.drivenAdapters.bus.RabbitPublisher;
 import com.sofka.inventory.models.dto.InventoryDTO;
 import com.sofka.inventory.models.dto.ProductDTO;
-import com.sofka.inventory.models.exceptions.ProductNotFoundException;
+import com.sofka.inventory.models.exceptions.ApplicationException;
 import com.sofka.inventory.models.mongo.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,7 +84,7 @@ public class SaleAddRetailUseCaseTests {
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.empty());
 
         StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
-            .expectError(ProductNotFoundException.class)
+            .expectError(ApplicationException.class)
             .verify();
     }
 
@@ -101,7 +101,7 @@ public class SaleAddRetailUseCaseTests {
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.just(product));
 
         StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
-            .expectError(IllegalArgumentException.class)
+            .expectError(ApplicationException.class)
             .verify();
     }
 
@@ -113,7 +113,7 @@ public class SaleAddRetailUseCaseTests {
         InventoryDTO inventoryDTO = new InventoryDTO(productDTO, 0);
 
         StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
-            .expectError(IllegalArgumentException.class)
+            .expectError(ApplicationException.class)
             .verify();
     }
 
@@ -129,7 +129,7 @@ public class SaleAddRetailUseCaseTests {
         when(mongoTemplate.findById(any(String.class), eq(Product.class))).thenReturn(Mono.just(product));
 
         StepVerifier.create(saleAddRetailUseCase.apply(Flux.just(inventoryDTO)))
-            .expectError(IllegalArgumentException.class)
+            .expectError(ApplicationException.class)
             .verify();
     }
 }

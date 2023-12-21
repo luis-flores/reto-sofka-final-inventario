@@ -1,26 +1,25 @@
 package com.sofka.inventory.drivenAdapters.bus;
 
 import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.rabbitmq.OutboundMessage;
 import reactor.rabbitmq.Sender;
 
 @Component
+@AllArgsConstructor
 public class RabbitPublisher {
-    @Autowired
     private Sender sender;
-
-    @Autowired
     private Gson gson;
 
     public void publishRecord(String message, Object object){
         publishLog(message, object, RabbitConfig.RECORD_ROUTING_KEY);
     }
 
-    public void publishError(String message, Object error) {
-        publishLog(message, error, RabbitConfig.ERROR_ROUTING_KEY);
+    public void publishError(String message, String errorMessage) {
+        message = message + errorMessage;
+        publishLog(message, null, RabbitConfig.ERROR_ROUTING_KEY);
     }
 
     public void publishProductMovement(String message, Object object) {
