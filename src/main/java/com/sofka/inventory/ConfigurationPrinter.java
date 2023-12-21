@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class ConfigurationPrinter {
 
     public ConfigurationPrinter(
-        @Value("${mongo.uri}") String mongoUri,
+        @Value("${inventory.mongo.uri}") String mongoUri,
         @Value("${rabbit.uri}") String rabbitUri
     ) {
         Logger logger = LoggerFactory.getLogger(ConfigurationPrinter.class);
